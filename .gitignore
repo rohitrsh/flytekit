@@ -43,3 +43,4 @@ testing
 .flyte/
 .claude/
 FEATURE*_CONTEXT.md
+SETUP.md
