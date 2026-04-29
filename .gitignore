@@ -42,3 +42,4 @@ flytekit/_version.py
 testing
 .flyte/
 .claude/
+FEATURE*_CONTEXT.md
