@@ -1,0 +1,61 @@
+apiVersion: iam.aws.crossplane.io/v1beta1
+kind: Role
+metadata:
+  name: ml-platform-flyte-int-us-east-1
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    assumeRolePolicyDocument: |
+      {
+          "Version": "2012-10-17",
+          "Statement": [
+              {
+                  "Effect": "Allow",
+                  "Principal": {
+                      "Federated": "arn:aws:iam::935051678728:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/7E27BA62369FC96C62A0C949366B138E"
+                  },
+                  "Action": "sts:AssumeRoleWithWebIdentity",
+                  "Condition": {
+                      "StringLike": {
+                          "oidc.eks.us-east-1.amazonaws.com/id/7E27BA62369FC96C62A0C949366B138E:sub": [
+                              "system:serviceaccount:ml-flyte-int:*"
+                          ]
+                      }
+                  }
+              },
+              {
+                  "Effect": "Allow",
+                  "Principal": {
+                      "Federated": "arn:aws:iam::935051678728:oidc-provider/s3.us-east-1.amazonaws.com/ashml-lab-test01-irsa-oidc-935051678728-us-east-1"
+                  },
+                  "Action": "sts:AssumeRoleWithWebIdentity",
+                  "Condition": {
+                      "StringLike": {
+                          "s3.us-east-1.amazonaws.com/ashml-lab-test01-irsa-oidc-935051678728-us-east-1:sub": [
+                              "system:serviceaccount:ml-flyte-int:*",
+                              "system:serviceaccount:ml-flyte-int:ml-platform-flyte-int-flytepropeller"
+                          ]
+                      }
+                  }
+              }
+          ]
+      }
+    maxSessionDuration: 3600
+    path: /
+    tags:
+    - key: Application
+      value: ml-platform-flyte-int
+    - key: AssetProtectionLevel
+      value: "99"
+    - key: Brand
+      value: Data and AI
+    - key: CostCenter
+      value: "80481"
+    - key: CreatedBy
+      value: ml-platform-flyte-int-admins-dl@expediagroup.com
+    - key: Team
+      value: databricks-admins
+  managementPolicies:
+  - '*'
+  providerConfigRef:
+    name: crossplane-provider-config

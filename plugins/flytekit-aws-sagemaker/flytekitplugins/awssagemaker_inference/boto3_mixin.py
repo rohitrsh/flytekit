@@ -26,6 +26,20 @@ def sorted_dict_str(d):
         return str(d)
 
 
+# https://github.com/flyteorg/flyte/issues/4505
+def convert_floats_with_no_fraction_to_ints(data):
+    """Recursively rewrite whole-number floats to ints so boto3 doesn't reject integer fields."""
+    if isinstance(data, dict):
+        for key, value in data.items():
+            data[key] = convert_floats_with_no_fraction_to_ints(value)
+    elif isinstance(data, list):
+        for i, item in enumerate(data):
+            data[i] = convert_floats_with_no_fraction_to_ints(item)
+    elif isinstance(data, float) and data.is_integer():
+        return int(data)
+    return data
+
+
 account_id_map = {
     "us-east-1": "785573368785",
     "us-east-2": "007439368137",
@@ -125,6 +139,11 @@ class Boto3ConnectorMixin:
             # compute hash of the config
             hash = xxhash.xxh64(sorted_dict_str(updated_config)).hexdigest()
             updated_config = format_dict(self._service, updated_config, args, idempotence_token=hash)
+
+        # boto3 rejects whole-number floats for integer-typed fields (e.g. InstanceCount,
+        # MaxRuntimeInSeconds). Normalise here so every code path benefits, not just the
+        # sync BotoConnector.do path that previously did this on its own.
+        updated_config = convert_floats_with_no_fraction_to_ints(updated_config)
 
         # Asynchronous Boto3 session
         session = aioboto3.Session()

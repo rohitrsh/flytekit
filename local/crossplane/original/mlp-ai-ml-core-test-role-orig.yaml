@@ -1,0 +1,56 @@
+apiVersion: iam.aws.crossplane.io/v1beta1
+kind: Role
+metadata:
+  name: mlp-ai-ml-core-test-us-east-1
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    assumeRolePolicyDocument: |-
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Principal": {
+              "Federated": "arn:aws:iam::935051678728:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/7E27BA62369FC96C62A0C949366B138E"
+            },
+            "Action": "sts:AssumeRoleWithWebIdentity",
+            "Condition": {
+              "StringLike": {
+                "oidc.eks.us-east-1.amazonaws.com/id/7E27BA62369FC96C62A0C949366B138E:aud": "sts.amazonaws.com",
+                "oidc.eks.us-east-1.amazonaws.com/id/7E27BA62369FC96C62A0C949366B138E:sub": "system:serviceaccount:flyte-ai-ml-core-test:*"
+              }
+            }
+          },
+          {
+            "Sid": "AllowEC2Assumption",
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [
+                "ec2.amazonaws.com"
+              ],
+              "AWS": "arn:aws:iam::935051678728:role/mlp-ai-ml-core-test-us-east-1"
+            },
+            "Action": "sts:AssumeRole"
+          }
+        ]
+      }
+    maxSessionDuration: 3600
+    path: /
+    tags:
+    - key: Application
+      value: ml-platform-onboarding
+    - key: Brand
+      value: Expedia Technology
+    - key: Team
+      value: ML Model Lifecycle Team
+    - key: CostCenter
+      value: "80481"
+    - key: AssetProtectionLevel
+      value: "99"
+    - key: CreatedBy
+      value: ml-platform-onboarding-crossplane
+  managementPolicies:
+  - '*'
+  providerConfigRef:
+    name: crossplane-provider-config

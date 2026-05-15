@@ -1,0 +1,14 @@
+apiVersion: iam.aws.crossplane.io/v1beta1
+kind: RolePolicyAttachment
+metadata:
+  name: ml-platform-flyte-int-sagemaker-attachment
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    policyArn: arn:aws:iam::935051678728:policy/ml-platform-flyte-sagemaker-us-east-1
+    roleNameRef:
+      name: ml-platform-flyte-int-us-east-1
+  managementPolicies:
+  - '*'
+  providerConfigRef:
+    name: crossplane-provider-config

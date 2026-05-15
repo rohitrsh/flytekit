@@ -1,0 +1,135 @@
+apiVersion: s3.aws.crossplane.io/v1beta1
+kind: Bucket
+metadata:
+  labels:
+    app.kubernetes.io/created-by: ai-ml-core
+    app.kubernetes.io/managed-by: ai-ml-core
+    name: ai-ml-core
+  name: mlp-ai-ml-core-test-935051678728-us-east-1
+spec:
+  deletionPolicy: Orphan
+  forProvider:
+    acl: private
+    locationConstraint: us-east-1
+    objectOwnership: BucketOwnerEnforced
+    paymentConfiguration:
+      payer: BucketOwner
+    policy:
+      id: mlp-ai-ml-core-test-935051678728-us-east-1-policy
+      statements:
+      - action:
+        - s3:DeleteObject
+        - s3:PutObject
+        effect: Allow
+        principal:
+          awsPrincipals:
+          - iamRoleArn: arn:aws:iam::935051678728:role/mlp-ai-ml-core-test-us-east-1
+        resource:
+        - arn:aws:s3:::mlp-ai-ml-core-test-935051678728-us-east-1/*
+        sid: AllowWriteAccessToProductRole
+      - action:
+        - s3:GetObject
+        - s3:ListBucket
+        effect: Allow
+        principal:
+          awsPrincipals:
+          - iamRoleArn: arn:aws:iam::935051678728:role/mlp-ai-ml-core-test-us-east-1
+        resource:
+        - arn:aws:s3:::mlp-ai-ml-core-test-935051678728-us-east-1/*
+        - arn:aws:s3:::mlp-ai-ml-core-test-935051678728-us-east-1
+        sid: AllowReadAccess
+      - action:
+        - s3:DeleteBucket
+        - s3:DeleteBucketPolicy
+        - s3:GetBucketPolicy
+        - s3:GetBucketAcl
+        - s3:GetBucketLocation
+        - s3:PutBucketAcl
+        - s3:PutBucketPolicy
+        - s3:ListBucket
+        effect: Allow
+        principal:
+          awsPrincipals:
+          - iamRoleArn: arn:aws:iam::935051678728:role/crossplane-role-rcp-us-east-1
+        resource:
+        - arn:aws:s3:::mlp-ai-ml-core-test-935051678728-us-east-1
+        sid: AllowBucketManagementToCrossplaneRole
+      - action:
+        - s3:GetObject
+        condition:
+        - conditions:
+          - key: aws:PrincipalArn
+            listValue:
+            - arn:aws:iam::935051678728:role/mlp-ai-ml-core-test-us-east-1
+          operatorKey: ArnNotLike
+        effect: Deny
+        principal:
+          awsPrincipals:
+          - iamRoleArn: '*'
+        resource:
+        - arn:aws:s3:::mlp-ai-ml-core-test-935051678728-us-east-1/*
+        sid: DenyGetAccessExceptProductRole
+      - action:
+        - s3:DeleteObject
+        - s3:PutObject
+        condition:
+        - conditions:
+          - key: aws:PrincipalArn
+            listValue:
+            - arn:aws:iam::935051678728:role/mlp-ai-ml-core-test-us-east-1
+          operatorKey: ArnNotLike
+        effect: Deny
+        principal:
+          awsPrincipals:
+          - iamRoleArn: '*'
+        resource:
+        - arn:aws:s3:::mlp-ai-ml-core-test-935051678728-us-east-1/*
+        sid: DenyWriteAccessExceptProductRole
+      - action:
+        - s3:DeleteBucket
+        - s3:DeleteBucketPolicy
+        - s3:GetBucketAcl
+        - s3:GetBucketLocation
+        - s3:PutBucketAcl
+        - s3:PutBucketPolicy
+        condition:
+        - conditions:
+          - key: aws:PrincipalArn
+            listValue:
+            - arn:aws:iam::935051678728:role/crossplane-role-rcp-us-east-1
+          operatorKey: ArnNotLike
+        effect: Deny
+        principal:
+          awsPrincipals:
+          - iamRoleArn: '*'
+        resource:
+        - arn:aws:s3:::mlp-ai-ml-core-test-935051678728-us-east-1
+        sid: DenyBucketManagementExceptCrossplaneRole
+      version: "2012-10-17"
+    publicAccessBlockConfiguration:
+      blockPublicAcls: true
+      blockPublicPolicy: true
+      ignorePublicAcls: true
+      restrictPublicBuckets: true
+    serverSideEncryptionConfiguration:
+      rules:
+      - applyServerSideEncryptionByDefault:
+          sseAlgorithm: AES256
+    tagging:
+      tagSet:
+      - key: Application
+        value: kk-test-workflow
+      - key: Brand
+        value: Expedia Technology
+      - key: Team
+        value: ML Model Lifecycle Team
+      - key: CostCenter
+        value: "80481"
+      - key: AssetProtectionLevel
+        value: "99"
+      - key: CreatedBy
+        value: ml-platform-onboarding-crossplane
+  managementPolicies:
+  - '*'
+  providerConfigRef:
+    name: crossplane-provider-config

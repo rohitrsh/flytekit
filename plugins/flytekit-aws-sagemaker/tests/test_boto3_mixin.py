@@ -5,6 +5,7 @@ import pytest
 from flytekitplugins.awssagemaker_inference import triton_image_uri
 from flytekitplugins.awssagemaker_inference.boto3_mixin import (
     Boto3ConnectorMixin,
+    convert_floats_with_no_fraction_to_ints,
     format_dict,
 )
 
@@ -245,3 +246,66 @@ async def test_call_with_truncated_idempotence_token_as_input(mock_session):
 
     assert result == mock_method.return_value
     assert idempotence_token == "ce735d6a183643f1"
+
+
+def test_convert_floats_with_no_fraction_to_ints_recursive():
+    """Whole-number floats become ints; non-whole floats and other types are left alone."""
+    data = {
+        "InstanceCount": 1.0,
+        "MaxRuntimeInSeconds": 3600.0,
+        "ResourceConfig": {"VolumeSizeInGB": 30.0, "Ratio": 0.75},
+        "InstanceGroups": [
+            {"InstanceCount": 2.0, "InstanceType": "ml.m5.xlarge"},
+        ],
+    }
+
+    result = convert_floats_with_no_fraction_to_ints(data)
+
+    assert result["InstanceCount"] == 1
+    assert isinstance(result["InstanceCount"], int)
+    assert result["MaxRuntimeInSeconds"] == 3600
+    assert isinstance(result["MaxRuntimeInSeconds"], int)
+    assert result["ResourceConfig"]["VolumeSizeInGB"] == 30
+    assert isinstance(result["ResourceConfig"]["VolumeSizeInGB"], int)
+    # Non-whole float is preserved.
+    assert result["ResourceConfig"]["Ratio"] == 0.75
+    assert isinstance(result["ResourceConfig"]["Ratio"], float)
+    # Lists recurse.
+    assert result["InstanceGroups"][0]["InstanceCount"] == 2
+    assert isinstance(result["InstanceGroups"][0]["InstanceCount"], int)
+    assert result["InstanceGroups"][0]["InstanceType"] == "ml.m5.xlarge"
+
+
+@pytest.mark.asyncio
+@patch("flytekitplugins.awssagemaker_inference.boto3_mixin.aioboto3.Session")
+async def test_call_normalises_whole_number_floats_to_ints(mock_session):
+    """Regression: the async path now applies the float->int conversion that
+    was previously only run by the sync BotoConnector. Without this, configs like
+    ``InstanceCount: 1.0`` (e.g. from JSON-decoded inputs) get rejected by boto3."""
+    mixin = Boto3ConnectorMixin(service="sagemaker", region="us-east-1")
+
+    mock_client = AsyncMock()
+    mock_session.return_value.client.return_value.__aenter__.return_value = mock_client
+    mock_method = mock_client.create_training_job
+
+    config = {
+        "TrainingJobName": "t",
+        "ResourceConfig": {
+            "InstanceType": "ml.m5.xlarge",
+            "InstanceCount": 1.0,
+            "VolumeSizeInGB": 30.0,
+        },
+        "StoppingCondition": {"MaxRuntimeInSeconds": 3600.0},
+    }
+
+    await mixin._call(method="create_training_job", config=config)
+
+    mock_method.assert_called_with(
+        TrainingJobName="t",
+        ResourceConfig={
+            "InstanceType": "ml.m5.xlarge",
+            "InstanceCount": 1,
+            "VolumeSizeInGB": 30,
+        },
+        StoppingCondition={"MaxRuntimeInSeconds": 3600},
+    )

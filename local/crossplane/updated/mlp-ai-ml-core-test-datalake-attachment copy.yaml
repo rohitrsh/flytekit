@@ -1,0 +1,25 @@
+apiVersion: iam.aws.crossplane.io/v1beta1
+kind: RolePolicyAttachment
+metadata:
+  name: mlp-ai-ml-core-test-datalake-attachment
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    # Attach the shared `mlp-datalake-read-us-east-1` managed policy to
+    # this MLP execution role.  The underlying policy is **not** managed
+    # by Crossplane -- it's created out-of-band via `aws iam create-policy`
+    # from `mlp-datalake-read-policy.json` (Kyverno admission webhooks
+    # block wildcard resources in Crossplane IAM Policies, so the shared
+    # policy lives outside the cluster).  The `policyArn` below therefore
+    # points at the literal AWS-managed policy ARN, not a Crossplane Ref.
+    #
+    # One attachment like this is required per mlp-* role.  The policy
+    # itself is scoped by `aws:PrincipalArn ArnLike mlp-*`, so attaching
+    # it to a non-MLP role would be a no-op.
+    policyArn: arn:aws:iam::935051678728:policy/mlp-datalake-read-us-east-1
+    roleNameRef:
+      name: mlp-ai-ml-core-test-us-east-1
+  managementPolicies:
+  - '*'
+  providerConfigRef:
+    name: crossplane-provider-config

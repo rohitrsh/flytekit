@@ -21,12 +21,18 @@ RUN uv pip install --system --no-cache-dir -U \
   flytekitplugins-k8sdataservice==$VERSION \
   flytekitplugins-openai==$VERSION \
   flytekitplugins-slurm==$VERSION \
-  flytekitplugins-snowflake==$VERSION \
-  flytekitplugins-awssagemaker==$VERSION \
+  flytekitplugins-snowflake==$VERSION
+
+# Install flytekitplugins-awssagemaker from local source so the image picks up
+# the in-flight training + batch-transform sub-packages that aren't yet on PyPI.
+# Revert this block to `flytekitplugins-awssagemaker==$VERSION` in the install
+# above once the OSS PR (flyteorg/flytekit#4079) is merged and released.
+COPY plugins/flytekit-aws-sagemaker /tmp/flytekit-aws-sagemaker
+RUN uv pip install --system --no-cache-dir /tmp/flytekit-aws-sagemaker \
+  && rm -rf /tmp/flytekit-aws-sagemaker \
   && apt-get clean autoclean \
   && apt-get autoremove --yes \
-  && rm -rf /var/lib/{apt,dpkg,cache,log}/ \
-  && :
+  && rm -rf /var/lib/{apt,dpkg,cache,log}/
 
 CMD ["pyflyte", "serve", "connector", "--port", "8000"]
 

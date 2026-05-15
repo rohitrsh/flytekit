@@ -1,0 +1,70 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "GlueCatalogReadOnlyForMlpRoles",
+      "Effect": "Allow",
+      "Action": [
+        "glue:GetDatabase",
+        "glue:GetDatabases",
+        "glue:GetTable",
+        "glue:GetTables",
+        "glue:GetPartition",
+        "glue:GetPartitions",
+        "glue:BatchGetPartition",
+        "glue:GetTableVersion",
+        "glue:GetTableVersions",
+        "glue:GetUserDefinedFunction",
+        "glue:GetUserDefinedFunctions",
+        "glue:GetTags"
+      ],
+      "Resource": [
+        "arn:aws:glue:us-east-1:935051678728:catalog",
+        "arn:aws:glue:us-east-1:935051678728:database/*",
+        "arn:aws:glue:us-east-1:935051678728:table/*/*"
+      ],
+      "Condition": {
+        "ArnLike": {
+          "aws:PrincipalArn": "arn:aws:iam::935051678728:role/mlp-*"
+        }
+      }
+    },
+    {
+      "Sid": "LakeFormationDataAccessForMlpRoles",
+      "Effect": "Allow",
+      "Action": [
+        "lakeformation:GetDataAccess"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "ArnLike": {
+          "aws:PrincipalArn": "arn:aws:iam::935051678728:role/mlp-*"
+        }
+      }
+    },
+    {
+      "Sid": "EGDLS3ReadOnlyForMlpRoles",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:GetObjectAcl",
+        "s3:GetObjectAttributes",
+        "s3:GetObjectTagging",
+        "s3:ListBucket",
+        "s3:ListBucketMultipartUploads",
+        "s3:ListBucketVersions",
+        "s3:ListMultipartUploadParts",
+        "s3:GetBucketLocation"
+      ],
+      "Resource": [
+        "arn:aws:s3:::egdl-935051678728-*",
+        "arn:aws:s3:::egdl-935051678728-*/*"
+      ],
+      "Condition": {
+        "ArnLike": {
+          "aws:PrincipalArn": "arn:aws:iam::935051678728:role/mlp-*"
+        }
+      }
+    }
+  ]
+}
