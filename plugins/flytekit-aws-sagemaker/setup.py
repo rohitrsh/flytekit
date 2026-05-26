@@ -4,6 +4,8 @@ PLUGIN_NAME = "awssagemaker"
 INFERENCE_PACKAGE = "awssagemaker_inference"
 TRAINING_PACKAGE = "awssagemaker_training"
 BATCH_TRANSFORM_PACKAGE = "awssagemaker_batch_transform"
+INFERENCE_RECOMMENDER_PACKAGE = "awssagemaker_inference_recommender"
+HYPERPARAMETER_TUNING_PACKAGE = "awssagemaker_hyperparameter_tuning"
 
 microlib_name = f"flytekitplugins-{PLUGIN_NAME}"
 
@@ -24,6 +26,8 @@ setup(
         f"flytekitplugins.{INFERENCE_PACKAGE}",
         f"flytekitplugins.{TRAINING_PACKAGE}",
         f"flytekitplugins.{BATCH_TRANSFORM_PACKAGE}",
+        f"flytekitplugins.{INFERENCE_RECOMMENDER_PACKAGE}",
+        f"flytekitplugins.{HYPERPARAMETER_TUNING_PACKAGE}",
     ],
     install_requires=plugin_requires,
     license="apache2",
@@ -46,6 +50,8 @@ setup(
             f"{INFERENCE_PACKAGE}=flytekitplugins.{INFERENCE_PACKAGE}",
             f"{TRAINING_PACKAGE}=flytekitplugins.{TRAINING_PACKAGE}",
             f"{BATCH_TRANSFORM_PACKAGE}=flytekitplugins.{BATCH_TRANSFORM_PACKAGE}",
+            f"{INFERENCE_RECOMMENDER_PACKAGE}=flytekitplugins.{INFERENCE_RECOMMENDER_PACKAGE}",
+            f"{HYPERPARAMETER_TUNING_PACKAGE}=flytekitplugins.{HYPERPARAMETER_TUNING_PACKAGE}",
         ]
     },
 )
