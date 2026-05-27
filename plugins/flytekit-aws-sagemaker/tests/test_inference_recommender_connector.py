@@ -31,9 +31,11 @@ def _task_config():
             "JobType": "Default",
             "JobDescription": "Smoke recommendations for ranker-prod",
             "RoleArn": "{inputs.role_arn}",
+            # NB: Default jobs reject InputConfig.JobDurationInSeconds — only
+            # Advanced jobs accept it. The Default sweep is bounded by
+            # StoppingConditions below.
             "InputConfig": {
                 "ModelPackageVersionArn": "{inputs.model_package_version_arn}",
-                "JobDurationInSeconds": 7200,
             },
             "StoppingConditions": {
                 "MaxInvocations": 1000,

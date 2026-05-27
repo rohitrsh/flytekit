@@ -377,7 +377,10 @@ recommend = SageMakerInferenceRecommenderJobTask(
                     "ml.c5.xlarge",
                 ],
             },
-            "JobDurationInSeconds": 3600,
+            # NOTE: do NOT set InputConfig.JobDurationInSeconds here — AWS rejects
+            # that field for JobType="Default" with a ValidationException.
+            # Default jobs are bounded by StoppingConditions below; the
+            # JobDurationInSeconds field is only valid for JobType="Advanced".
         },
         "StoppingConditions": {
             "MaxInvocations": 500,

@@ -28,6 +28,44 @@ resource "aws_iam_policy" "flyte_sagemaker_policy" {
         Resource = "arn:aws:sagemaker:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:transform-job/*"
       },
       {
+        Sid    = "SageMakerHyperParameterTuningJobLifecycle"
+        Effect = "Allow"
+        Action = [
+          "sagemaker:CreateHyperParameterTuningJob",
+          "sagemaker:DescribeHyperParameterTuningJob",
+          "sagemaker:StopHyperParameterTuningJob",
+        ]
+        # Each trial of an HPO job is a child training job that SageMaker creates
+        # on our behalf using TrainingJobDefinition.RoleArn — those don't need
+        # explicit caller-side perms here. The connector's secondary
+        # describe_training_job call (used to resolve BestTrainingJob's
+        # ModelArtifacts.S3ModelArtifacts on completion) IS a caller-side action,
+        # but it's already covered by SageMakerTrainingJobLifecycle above.
+        Resource = "arn:aws:sagemaker:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:hyper-parameter-tuning-job/*"
+      },
+      {
+        Sid    = "SageMakerInferenceRecommendationsJobLifecycle"
+        Effect = "Allow"
+        Action = [
+          "sagemaker:CreateInferenceRecommendationsJob",
+          "sagemaker:DescribeInferenceRecommendationsJob",
+          "sagemaker:StopInferenceRecommendationsJob",
+        ]
+        # Default-job mode (our smoke uses this) calls Create with ModelName +
+        # ContainerConfig, which authorises sagemaker:DescribeModel on the
+        # referenced model — already granted by SageMakerModelLifecycle below.
+        #
+        # If callers switch to the ModelPackageVersionArn input path, they'll
+        # additionally need sagemaker:DescribeModelPackage on
+        # model-package/* — add that statement separately when that workflow
+        # comes online.
+        #
+        # The Recommender spins up short-lived benchmark endpoints internally
+        # under the user-supplied RoleArn (passed via PassRoleToSageMaker
+        # below); the caller identity does NOT need endpoint perms for that.
+        Resource = "arn:aws:sagemaker:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:inference-recommendations-job/*"
+      },
+      {
         Sid    = "SageMakerModelLifecycle"
         Effect = "Allow"
         Action = [

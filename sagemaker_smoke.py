@@ -317,6 +317,10 @@ recommender_task = SageMakerInferenceRecommenderJobTask(
         "JobType": "Default",
         "JobDescription": "Default Inference Recommender sweep for smoke tests",
         "RoleArn": EXEC_ROLE,
+        # NOTE: Default jobs reject InputConfig.JobDurationInSeconds — AWS uses
+        # its own internal timeout and bounds the run via StoppingConditions
+        # (MaxInvocations + ModelLatencyThresholds) below. JobDurationInSeconds
+        # is only valid for JobType="Advanced".
         "InputConfig": {
             "ContainerConfig": {
                 "Domain": "MACHINE_LEARNING",
@@ -335,7 +339,6 @@ recommender_task = SageMakerInferenceRecommenderJobTask(
                 ],
             },
             "ModelName": "{inputs.model_name}",
-            "JobDurationInSeconds": 3600,
         },
         "StoppingConditions": {
             "MaxInvocations": 500,
